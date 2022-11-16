@@ -145,9 +145,6 @@ export const useStore = create(
         }
 
         const themeName = newTheme as ThemeName;
-        toggleTheme({
-          scopeName: newTheme,
-        });
         state.userInfo!.profile.theme = themeName;
         state.themeClassify = themeName.split('-')[0] as ThemeClassify;
       });
