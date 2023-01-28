@@ -9,7 +9,7 @@ import { SpaceBetweenWrapper } from '../../styledComponents';
 
 export type ResponseRawProps = {
   hiddenAction?: boolean;
-  onSave?: () => void;
+  onSave?: (value?: string) => void;
   onCancel?: () => void;
 } & ReactCodeMirrorProps;
 
@@ -28,7 +28,7 @@ const ResponseRaw: FC<ResponseRawProps> = (props) => {
             <Button size='small' onClick={onCancel}>
               {t('cancel')}
             </Button>
-            <Button size='small' type='primary' onClick={onSave}>
+            <Button size='small' type='primary' onClick={() => onSave?.(props.value)}>
               {t('save')}
             </Button>
           </Space>

@@ -9,29 +9,29 @@ type SortTreeProps = Omit<TreeProps, 'treeData'> & {
   title?: string;
 };
 
+function parseSortArray(data?: any[] | object, basePath = ''): DataNode[] {
+  if (!data || (Array.isArray(data) && !data?.length)) return [];
+
+  const sample = Array.isArray(data) ? data[0] : data;
+
+  if (['number', 'string'].includes(typeof sample))
+    return [{ title: '%value%', key: basePath + '%value%/' }];
+
+  const entries = Object.entries(sample);
+  return entries.map(([key, value]) => {
+    const path = basePath + key + '/';
+    return value && typeof value === 'object'
+      ? {
+          title: key,
+          key: path,
+          children: parseSortArray(Array.isArray(value) ? value[0] || [] : value, path),
+        }
+      : { title: key, key: path, value: path };
+  });
+}
+
 const SortTree: FC<SortTreeProps> = (props) => {
   const { t } = useTranslation('components');
-
-  function getNodes(data?: any[] | object, basePath = ''): DataNode[] {
-    if (!data || (Array.isArray(data) && !data?.length)) return [];
-
-    const sample = Array.isArray(data) ? data[0] : data;
-
-    if (['number', 'string'].includes(typeof sample))
-      return [{ title: '%value%', key: basePath + '%value%/' }];
-
-    const entries = Object.entries(sample);
-    return entries.map(([key, value]) => {
-      const path = basePath + key + '/';
-      return value && typeof value === 'object'
-        ? {
-            title: key,
-            key: path,
-            children: getNodes(Array.isArray(value) ? value[0] || [] : value, path),
-          }
-        : { title: key, key: path, value: path };
-    });
-  }
 
   return (
     <Card
@@ -47,7 +47,7 @@ const SortTree: FC<SortTreeProps> = (props) => {
         defaultExpandAll
         autoExpandParent
         selectedKeys={[]}
-        treeData={getNodes(props.treeData, '')}
+        treeData={parseSortArray(props.treeData, '')}
       />
     </Card>
   );

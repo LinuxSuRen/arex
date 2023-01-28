@@ -35,6 +35,8 @@ const SettingNodesIgnore: FC<SettingNodeIgnoreProps> = (props) => {
   const { message } = App.useApp();
   const { t } = useTranslation(['components', 'common']);
 
+  const [rawResponse, setRawResponse] = useState<string>();
+
   const [checkedNodesData, setCheckedNodesData] = useImmer<{
     operationId?: OperationId<'Global'>;
     operationName?: string;
@@ -154,6 +156,9 @@ const SettingNodesIgnore: FC<SettingNodeIgnoreProps> = (props) => {
       onBefore() {
         setInterfaceResponse();
       },
+      onSuccess(res) {
+        setRawResponse(tryPrettierJsonString(res?.operationResponse || ''));
+      },
     },
   );
   const interfaceResponseParsed = useMemo<{ [key: string]: any }>(() => {
@@ -187,10 +192,10 @@ const SettingNodesIgnore: FC<SettingNodeIgnoreProps> = (props) => {
   };
   /**
    * 保存某个 interface 的 response
-   * @param value
    */
-  const handleResponseSave = (value?: string) => {
-    const parsed = value && tryParseJsonString(value, 'Invalid JSON');
+  const handleResponseSave = () => {
+    console.log({ rawResponse });
+    const parsed = tryParseJsonString(rawResponse, 'Invalid JSON');
     if (!!activeOperationInterface?.id && parsed) {
       updateInterfaceResponse({
         id: activeOperationInterface.id,
@@ -299,7 +304,8 @@ const SettingNodesIgnore: FC<SettingNodeIgnoreProps> = (props) => {
               />
             ) : (
               <ResponseRaw
-                value={tryPrettierJsonString(interfaceResponse?.operationResponse || '')}
+                value={rawResponse}
+                onChange={setRawResponse}
                 onSave={handleResponseSave}
                 onCancel={handleCancelEditResponse}
               />

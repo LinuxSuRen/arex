@@ -2,7 +2,11 @@ import path from 'path';
 
 export default {
   babel: {
-    presets: ['@emotion/babel-preset-css-prop'],
+    presets: [
+      '@emotion/babel-preset-css-prop',
+      ['@babel/preset-env', { targets: { node: 'current' } }],
+      '@babel/preset-typescript',
+    ],
   },
   devServer: {
     client: {

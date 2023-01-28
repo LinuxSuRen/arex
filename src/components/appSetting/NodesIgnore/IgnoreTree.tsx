@@ -1,4 +1,3 @@
-import styled from '@emotion/styled';
 import { Button, Card, Spin, Tree, Typography } from 'antd';
 import { TreeProps } from 'antd/es';
 import { DataNode } from 'antd/lib/tree';
@@ -21,30 +20,45 @@ type IgnoreTreeProps = Omit<TreeProps, 'treeData'> & {
 //   }
 // `;
 
+type ParsedJson = {
+  title: string;
+  key: string;
+  value?: string;
+  children?: ParsedJson[];
+};
+
+export function parseIgnoreObject(value: unknown, basePath = ''): ParsedJson[] {
+  if (!value || (Array.isArray(value) && !value?.length)) return [];
+
+  const sample = Array.isArray(value) ? value[0] : value;
+
+  if (['number', 'string'].includes(typeof sample))
+    return [{ title: sample, key: basePath + sample, value: sample }];
+
+  const entries = Object.entries(sample);
+  return entries.map<ParsedJson>(([key, sample]) => {
+    const path = basePath + key + '/';
+    return ['number', 'string'].includes(typeof sample) ||
+      (Array.isArray(sample) && ['number', 'string'].includes(typeof sample[0]))
+      ? { title: key, key: path, value: sample as string }
+      : {
+          title: key,
+          key: path,
+          children: parseIgnoreObject(sample, path),
+        };
+  });
+}
 const IgnoreTree: FC<IgnoreTreeProps> = (props) => {
   const { t } = useTranslation(['components', 'common']);
 
   // 过滤出 object 类型的节点
-  function getNodes(object: object, basePath = ''): DataNode[] {
-    const entries = Object.entries(object);
-    return entries.map(([key, value]) => {
-      const path = basePath + key + '/';
-      return value && typeof value === 'object'
-        ? {
-            title: key,
-            key: path,
-            children: getNodes(Array.isArray(value) ? value[0] || {} : value, path),
-          }
-        : { title: key, key: path, value };
-    });
-  }
 
   return (
     // <IgnoreTreeWrapper>
     <>
       <SpaceBetweenWrapper style={{ paddingBottom: '8px' }}>
         <Typography.Title level={5}>{t('appSetting.dataStructure')}</Typography.Title>
-        <Button size='small' type='primary' onClick={() => props.onSave && props.onSave()}>
+        <Button size='small' type='primary' onClick={() => props.onSave?.()}>
           {t('save', { ns: 'common' })}
         </Button>
       </SpaceBetweenWrapper>
@@ -52,7 +66,12 @@ const IgnoreTree: FC<IgnoreTreeProps> = (props) => {
       <Card size='small' title={`${props.title} (${t('appSetting.clickToIgnore')})`}>
         <Spin spinning={props.loading}>
           {Object.keys(props.treeData).length ? (
-            <Tree multiple defaultExpandAll {...props} treeData={getNodes(props.treeData, '')} />
+            <Tree
+              multiple
+              defaultExpandAll
+              {...props}
+              treeData={parseIgnoreObject(props.treeData, '')}
+            />
           ) : (
             <EmptyResponse onClick={props.onEditResponse} />
           )}
