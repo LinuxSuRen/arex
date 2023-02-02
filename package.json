@@ -1,0 +1,22 @@
+{
+  "name": "arex",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "pnpm -r do-start",
+    "buildrs": "node build_rs_pkg.js",
+    "build": "pnpm -r do-build && rm -rf ./packages/arex-node/client/* && mv ./packages/arex-ui/dist/* ./packages/arex-node/client",
+    "server": "pnpm -r do-server",
+    "lint": "rome format ./ --write"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rome": "^11.0.0"
+  },
+  "workspaces": [
+    "./packages/*"
+  ]
+}

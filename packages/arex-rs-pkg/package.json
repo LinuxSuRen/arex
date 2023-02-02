@@ -1,0 +1,22 @@
+{
+  "name": "arex-rs",
+  "collaborators": [
+    "Your Name <you@example.com>"
+  ],
+  "description": "description",
+  "version": "0.1.0",
+  "license": "MIT/Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourgithubusername/arex-rs"
+  },
+  "files": [
+    "arex_rs_bg.wasm",
+    "arex_rs.js",
+    "arex_rs_bg.js",
+    "arex_rs.d.ts"
+  ],
+  "module": "arex_rs.js",
+  "types": "arex_rs.d.ts",
+  "sideEffects": false
+}
