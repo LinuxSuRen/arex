@@ -23,14 +23,17 @@ export type StructuredValue = {
 };
 
 export type StructuredOptionProps = {
+  keyword?: string;
   options: StructuredOptionType[];
   onChange?: (value: StructuredValue) => void;
+  onSearch?: (keyword?: string) => void;
 };
 
 export type StructuredOptionRef = {
   reset: () => void;
 };
 
+const KeywordKey = '__keyword';
 const InitialValue = {
   category: undefined,
   operator: undefined,
@@ -44,14 +47,16 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
   const carouselRef = useRef<CarouselRef>(null);
   const [value, setValue] = useImmer<StructuredValue>(InitialValue);
 
-  const categoryOptions = useMemo<ItemType[]>(
-    () =>
-      props.options.map((o) => ({
-        label: o.category,
-        key: o.category,
-      })),
-    [props.options],
-  );
+  const categoryOptions = useMemo<ItemType[]>(() => {
+    const filterOptions = props.options.filter((o) => o.category.includes(props.keyword || ''));
+
+    return filterOptions.length
+      ? filterOptions.map((o) => ({
+          label: o.category,
+          key: o.category,
+        }))
+      : [{ label: 'Search for this text', key: KeywordKey }];
+  }, [props.options, props.keyword]);
 
   const operatorOptions = useMemo<ItemType[]>(
     () =>
@@ -89,11 +94,13 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
         e.stopPropagation();
       }}
     >
-      <Carousel ref={carouselRef}>
+      <Carousel fade ref={carouselRef} dots={categoryOptions?.[0]?.key !== KeywordKey}>
         <Menu
           selectedKeys={[]}
           items={categoryOptions}
           onClick={({ key: category }) => {
+            if (category === KeywordKey) return props.onSearch?.(props.keyword);
+
             setValue((value) => {
               value.category = category;
             });
