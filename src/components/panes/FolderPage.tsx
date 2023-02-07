@@ -8,6 +8,7 @@ import { Authorization } from '../Folder';
 import { ScriptBlocks } from '../index';
 import { reorder, ScriptBlock, ScriptBlocksMap, ScriptBlockType } from '../ScriptBlocks';
 import { ScriptBlocksProps } from '../ScriptBlocks/ScriptBlocks';
+import StructuredFilter from '../StructuredFilter';
 import { PageFC } from './index';
 
 const ScriptBlocksSource = [ScriptBlocksMap[ScriptBlockType.CustomScript]];
@@ -90,8 +91,7 @@ const FolderPage: PageFC = () => {
         {
           key: 'tests',
           label: t('folderPage.tests', { ns: 'page' }),
-          children: 'Content of Tests',
-          disabled: true,
+          children: <StructuredFilter />,
         },
       ]}
     />
