@@ -47,7 +47,7 @@ export function clearLocalStorage(key?: string) {
   }
 }
 
-export function tryParseJsonString<T>(jsonString?: string, errorTip?: string) {
+export function tryParseJsonString<T>(jsonString?: string | null, errorTip?: string) {
   try {
     return JSON.parse(jsonString || '{}') as T;
   } catch (e) {

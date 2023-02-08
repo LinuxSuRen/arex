@@ -1,14 +1,19 @@
-import { Tabs } from 'antd';
-import React, { useCallback, useState } from 'react';
+import { Tabs, Tag } from 'antd';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useImmer } from 'use-immer';
 
 import { uuid } from '../../helpers/utils';
+import { useStore } from '../../store';
 import { Authorization } from '../Folder';
 import { ScriptBlocks } from '../index';
 import { reorder, ScriptBlock, ScriptBlocksMap, ScriptBlockType } from '../ScriptBlocks';
 import { ScriptBlocksProps } from '../ScriptBlocks/ScriptBlocks';
-import StructuredFilter from '../StructuredFilter';
+import StructuredFilter, {
+  LabelKey,
+  SearchDataType,
+  StructuredFilterProps,
+} from '../StructuredFilter';
 import { PageFC } from './index';
 
 const ScriptBlocksSource = [ScriptBlocksMap[ScriptBlockType.CustomScript]];
@@ -17,6 +22,27 @@ const FolderPage: PageFC = () => {
   const { t } = useTranslation(['components', 'page']);
   const [script, setScript] = useState<string>();
   const [items, setItems] = useImmer<ScriptBlock<string>[]>([]);
+
+  const { labelData } = useStore();
+  const [searchData, setSearchData] = useState<SearchDataType>();
+  const options = useMemo(
+    () => [
+      {
+        category: LabelKey,
+        operator: ['==', '!='],
+        value: labelData.map((label) => ({
+          label: <Tag color={label.color}>{label.labelName}</Tag>,
+          key: label.id,
+        })),
+      },
+      {
+        category: 'name',
+        operator: ['==', '!='],
+        value: ['Tom', 'Jack', 'Lina'],
+      },
+    ],
+    [labelData],
+  );
 
   const handleAdd: ScriptBlocksProps<string>['onAdd'] = (key) => {
     const block = ScriptBlocksSource.find((block) => block.key === key);
@@ -91,7 +117,12 @@ const FolderPage: PageFC = () => {
         {
           key: 'tests',
           label: t('folderPage.tests', { ns: 'page' }),
-          children: <StructuredFilter />,
+          children: (
+            <>
+              <StructuredFilter options={options} onSearch={setSearchData} />
+              <span>{JSON.stringify(searchData)}</span>
+            </>
+          ),
         },
       ]}
     />

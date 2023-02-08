@@ -137,8 +137,13 @@ export type nodeType = {
 const CollectionMenu = () => {
   const { t } = useTranslation(['components']);
   const params = useParams();
-  const { activeMenu, collectionLastManualUpdateTimestamp, setPages, setCollectionTreeData } =
-    useStore();
+  const {
+    activeMenu,
+    collectionLastManualUpdateTimestamp,
+    setPages,
+    setLabelData,
+    setCollectionTreeData,
+  } = useStore();
   const email = getLocalStorage<string>(EmailKey);
 
   const value = useMemo(() => parseGlobalPaneId(activeMenu[1])['rawId'], [activeMenu]);
@@ -172,6 +177,13 @@ const CollectionMenu = () => {
           setExpandedKeys([params.rawId]);
         }
       }
+    },
+  });
+
+  useRequest(() => CollectionService.queryLabels({ workspaceId: params.workspaceId as string }), {
+    ready: !!params.workspaceId,
+    onSuccess(res) {
+      setLabelData(res);
     },
   });
 

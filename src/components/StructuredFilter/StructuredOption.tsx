@@ -7,13 +7,14 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import { useImmer } from 'use-immer';
 
 export type StructuredOptionType = {
   category: string;
   operator: string[];
-  value: string[] | number[];
+  value: string[] | number[] | ItemType[];
 };
 
 export type StructuredValue = {
@@ -25,14 +26,25 @@ export type StructuredValue = {
 export type StructuredOptionProps = {
   keyword?: string;
   options: StructuredOptionType[];
-  onChange?: (value: StructuredValue) => void;
+  onChange?: (
+    mode: StructuredOptionMode,
+    value: StructuredValue,
+    oldValue?: StructuredValue,
+  ) => void;
   onSearch?: (keyword?: string) => void;
 };
 
 export type StructuredOptionRef = {
+  set: (value: { data?: StructuredValue; type?: (typeof Step)[1] | (typeof Step)[2] }) => void;
   reset: () => void;
 };
 
+export enum StructuredOptionMode {
+  'append',
+  'modify',
+}
+
+const Step = ['category', 'operator', 'value'] as const;
 const KeywordKey = '__keyword';
 const InitialValue = {
   category: undefined,
@@ -45,6 +57,8 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
   ref,
 ) => {
   const carouselRef = useRef<CarouselRef>(null);
+
+  const [mode, setMode] = useState<StructuredOptionMode>(StructuredOptionMode.append); // process: 三步流程模式，single: 单一属性编辑模式
   const [value, setValue] = useImmer<StructuredValue>(InitialValue);
 
   const categoryOptions = useMemo<ItemType[]>(() => {
@@ -55,7 +69,7 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
           label: o.category,
           key: o.category,
         }))
-      : [{ label: 'Search for this text', key: KeywordKey }];
+      : [{ label: 'Search for this keyword', key: KeywordKey }];
   }, [props.options, props.keyword]);
 
   const operatorOptions = useMemo<ItemType[]>(
@@ -69,23 +83,46 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
     [value.category],
   );
 
-  const valueOptions = useMemo<ItemType[]>(
-    () =>
-      props.options
-        .find((o) => o.category === value.category)
-        ?.value.map((value) => ({
-          label: value,
-          key: value,
-        })) || [],
-    [value],
-  );
+  const valueOptions = useMemo<ItemType[]>(() => {
+    const option = props.options.find((o) => o.category === value.category)?.value;
+
+    if (option?.length && ['number', 'string'].includes(typeof option[0]))
+      return option.map<ItemType>((value) => ({
+        label: value,
+        key: value,
+      }));
+    else return (option as ItemType[]) || [];
+  }, [value]);
 
   useImperativeHandle(ref, () => ({
+    set({ type, data }) {
+      setMode(StructuredOptionMode.modify);
+      setValue(data || InitialValue);
+      const step = Step.findIndex((s) => s === type);
+      carouselRef.current?.goTo(step >= 0 ? step : 0);
+    },
     reset() {
       setValue(InitialValue);
       carouselRef.current?.goTo(0);
     },
   }));
+
+  const handleChange = (data: StructuredValue, step: (typeof Step)[number]) => {
+    if (mode === StructuredOptionMode.modify) {
+      props.onChange?.(mode, data, value);
+      carouselRef.current?.goTo(0, false);
+      setMode(StructuredOptionMode.append);
+    } else if (mode === StructuredOptionMode.append) {
+      if (step === Step[2]) {
+        // end of append
+        props.onChange?.(mode, data);
+        carouselRef.current?.goTo(0, false);
+      } else {
+        carouselRef.current?.next();
+      }
+    }
+    setValue(data);
+  };
 
   return (
     <div
@@ -94,38 +131,27 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
         e.stopPropagation();
       }}
     >
-      <Carousel fade ref={carouselRef} dots={categoryOptions?.[0]?.key !== KeywordKey}>
+      <Carousel fade ref={carouselRef} dots={false}>
         <Menu
           selectedKeys={[]}
           items={categoryOptions}
           onClick={({ key: category }) => {
             if (category === KeywordKey) return props.onSearch?.(props.keyword);
-
-            setValue((value) => {
-              value.category = category;
-            });
-            carouselRef.current?.next();
+            handleChange({ ...value, category }, Step[0]);
           }}
         />
         <Menu
           selectedKeys={[]}
           items={operatorOptions}
-          onClick={({ key }) => {
-            setValue((value) => {
-              value.operator = key;
-            });
-            carouselRef.current?.next();
+          onClick={({ key: operator }) => {
+            handleChange({ ...value, operator }, Step[1]);
           }}
         />
         <Menu
           selectedKeys={[]}
           items={valueOptions}
           onClick={({ key }) => {
-            setValue((value) => {
-              value.value = key;
-            });
-            props.onChange?.({ ...value, value: key });
-            carouselRef.current?.goTo(0, false);
+            handleChange({ ...value, value: key }, Step[2]);
           }}
         />
       </Carousel>

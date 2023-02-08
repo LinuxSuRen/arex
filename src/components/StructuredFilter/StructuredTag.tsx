@@ -1,13 +1,21 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
 import { useHover } from 'ahooks';
-import { Button, Space, Typography } from 'antd';
+import { Button, Space, Tag, Typography } from 'antd';
 import { DefaultOptionType } from 'rc-select/lib/Select';
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
 
+import { tryParseJsonString } from '../../helpers/utils';
+import { Label } from '../../services/Collection.type';
+import { useStore } from '../../store';
+import { LabelKey } from './index';
+import { StructuredValue } from './StructuredOption';
+
 export type StructuredTagProps = {
-  onDelete?: (key?: string) => void;
+  onOperatorClick?: (data?: StructuredValue) => void;
+  onValueClick?: (data?: StructuredValue) => void;
+  onDelete?: (data?: StructuredValue) => void;
 } & DefaultOptionType;
 
 const StructuredTagWrapper = styled.div`
@@ -28,54 +36,78 @@ const StructuredTagWrapper = styled.div`
     opacity: 0;
     transition: opacity 200ms;
   }
+
+  .ant-tag {
+    position: relative;
+    cursor: pointer;
+    margin-inline-end: -1px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 `;
 
 const StructuredTag = (props: StructuredTagProps) => {
-  const categoryButtonRef = useRef<HTMLDivElement>(null);
+  const { labelData } = useStore();
+
+  const categoryRef = useRef<HTMLDivElement>(null);
   const closeIconRef = useRef<HTMLDivElement>(null);
   const categoryNodeRef = useRef(null);
 
-  const hoverCategoryButton = useHover(categoryButtonRef);
+  const hoverCategoryButton = useHover(categoryRef);
+
+  const data = useMemo(
+    () => tryParseJsonString<StructuredValue>(props.value as string),
+    [props.value],
+  );
+
+  const label = useMemo<Label | undefined>(() => {
+    const isLabel = data?.category === LabelKey;
+    return isLabel ? labelData.find((label) => label.id === data.value) : undefined;
+  }, [labelData, props.value]);
 
   return (
     <StructuredTagWrapper>
       <Space.Compact block size='small' style={{ margin: '4px' }}>
-        <Button
-          size='small'
-          ref={categoryButtonRef}
-          onClick={() => props.onDelete?.(props.value?.toString())}
-        >
-          <CSSTransition
-            nodeRef={categoryNodeRef}
-            in={!hoverCategoryButton}
-            timeout={2000}
-            classNames='my-node'
-          >
-            <Typography ref={categoryNodeRef}>
-              {JSON.parse(props.value as string)?.category}
-            </Typography>
-          </CSSTransition>
+        {React.createElement(
+          data?.category === LabelKey ? Tag : Button,
+          {
+            color: label?.color,
+            ref: categoryRef,
+            onClick: () => props.onDelete?.(data),
+          },
+          <>
+            <CSSTransition
+              nodeRef={categoryNodeRef}
+              in={!hoverCategoryButton}
+              timeout={2000}
+              classNames='my-node'
+            >
+              <Typography ref={categoryNodeRef}>{data?.category}</Typography>
+            </CSSTransition>
+            <CSSTransition
+              nodeRef={closeIconRef}
+              in={hoverCategoryButton}
+              timeout={2000}
+              classNames='my-node'
+            >
+              <CloseCircleOutlined
+                ref={closeIconRef}
+                className='structure-tag-hidden'
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: ' 50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            </CSSTransition>
+          </>,
+        )}
 
-          <CSSTransition
-            nodeRef={closeIconRef}
-            in={hoverCategoryButton}
-            timeout={2000}
-            classNames='my-node'
-          >
-            <CloseCircleOutlined
-              ref={closeIconRef}
-              className='structure-tag-hidden'
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: ' 50%',
-                transform: 'translate(-50%, -50%)',
-              }}
-            />
-          </CSSTransition>
+        <Button onClick={() => props.onOperatorClick?.(data)}>{data?.operator}</Button>
+        <Button onClick={() => props.onValueClick?.(data)}>
+          {label?.labelName || data?.value}
         </Button>
-        <Button size='small'>{JSON.parse(props.value as string)?.operator}</Button>
-        <Button size='small'>{JSON.parse(props.value as string)?.value}</Button>
       </Space.Compact>
     </StructuredTagWrapper>
   );

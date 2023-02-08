@@ -1,19 +1,30 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { css } from '@emotion/react';
 import { useKeyPress } from 'ahooks';
-import { Button, Select } from 'antd';
+import { Button, Select, Tag } from 'antd';
 import { isEqual } from 'lodash';
 import { BaseSelectRef } from 'rc-select';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { FC, useMemo, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 
-import { tryParseJsonString } from '../../helpers/utils';
-import StructuredOption, { StructuredOptionRef, StructuredValue } from './StructuredOption';
+import { useStore } from '../../store';
+import StructuredOption, {
+  StructuredOptionMode,
+  StructuredOptionProps,
+  StructuredOptionRef,
+  StructuredOptionType,
+  StructuredValue,
+} from './StructuredOption';
 import StructuredTag from './StructuredTag';
 
-const FilterData: StructuredValue[] = [{ category: 'Name', operator: 'contains', value: 'invest' }];
+export const LabelKey = 'label';
+export type SearchDataType = { keyword?: string; structuredValue: StructuredValue[] };
+export type StructuredFilterProps = {
+  onSearch?: (value: SearchDataType) => void;
+  options: StructuredOptionType[];
+};
 
-const StructuredFilter = () => {
+const StructuredFilter: FC<StructuredFilterProps> = (props) => {
   const selectRef = useRef<BaseSelectRef>(null);
   const structuredOptionRef = useRef<StructuredOptionRef>(null);
 
@@ -21,46 +32,49 @@ const StructuredFilter = () => {
   const [open, setOpen] = useState(false);
 
   const [keyword, setKeyword] = useState<string>();
-  const [filterData, setFilterData] = useImmer<StructuredValue[]>(FilterData);
+  const [filterData, setFilterData] = useImmer<StructuredValue[]>([]);
 
-  const options = useMemo(
-    () => [
-      {
-        category: 'number',
-        operator: ['==', '>', '<', '>=', '<='],
-        value: [1, 2, 3],
-      },
-      {
-        category: 'name',
-        operator: ['==', '!='],
-        value: ['pwang31'],
-      },
-    ],
-    [],
-  );
-
-  useKeyPress('Backspace', () => {
-    // focus &&
-    //   setFilterData((state) => {
-    //     state.pop();
-    //   });
+  useKeyPress(['Backspace', 'Enter'], (e) => {
+    if (focus) {
+      if (e.key === 'Enter') return handleSearch();
+      if (e.key === 'Backspace' && !keyword) {
+        setFilterData((state) => {
+          state.pop();
+        });
+      }
+    }
   });
 
-  const handleDeleteTag = (value?: string) => {
-    const parsedValue = tryParseJsonString<StructuredValue>(value);
-    const data = filterData.filter((data) => !isEqual(parsedValue, data));
+  const handleTagOperatorClick = (data?: StructuredValue) => {
+    structuredOptionRef.current?.set({ type: 'operator', data });
+  };
+
+  const handleTagValueClick = (data?: StructuredValue) => {
+    structuredOptionRef.current?.set({ type: 'value', data });
+  };
+
+  const handleDeleteTag = (value?: StructuredValue) => {
+    const data = filterData.filter((data) => !isEqual(value, data));
     setFilterData(data);
   };
 
-  const handleChange = (value: StructuredValue) => {
+  const handleChange: StructuredOptionProps['onChange'] = (mode, value, oldValue) => {
     setOpen(false);
-    setFilterData((state) => {
-      state.push(value);
-    });
+    if (mode === StructuredOptionMode.modify) {
+      setFilterData((state) => {
+        const index = state.findIndex((item) => isEqual(item, oldValue));
+        index >= 0 && (state[index] = value);
+      });
+    } else if (mode === StructuredOptionMode.append) {
+      setFilterData((state) => {
+        state.push(value);
+      });
+    }
   };
 
   const handleSearch = () => {
-    console.log({ filterData, keyword });
+    setOpen(false);
+    props.onSearch?.({ structuredValue: filterData, keyword });
   };
 
   return (
@@ -70,7 +84,14 @@ const StructuredFilter = () => {
         ref={selectRef}
         mode='multiple'
         open={open}
-        tagRender={(props) => <StructuredTag {...props} onDelete={handleDeleteTag} />}
+        tagRender={(props) => (
+          <StructuredTag
+            {...props}
+            onOperatorClick={handleTagOperatorClick}
+            onValueClick={handleTagValueClick}
+            onDelete={handleDeleteTag}
+          />
+        )}
         value={filterData.map((data) => JSON.stringify(data))}
         searchValue={keyword}
         autoClearSearchValue={false}
@@ -78,7 +99,7 @@ const StructuredFilter = () => {
           <StructuredOption
             ref={structuredOptionRef}
             keyword={keyword}
-            options={options}
+            options={props.options}
             onChange={handleChange}
             onSearch={handleSearch}
           />
