@@ -1,13 +1,12 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { css } from '@emotion/react';
 import { useKeyPress } from 'ahooks';
-import { Button, Select, Tag } from 'antd';
+import { Button, Select } from 'antd';
 import { isEqual } from 'lodash';
 import { BaseSelectRef } from 'rc-select';
-import React, { FC, useMemo, useRef, useState } from 'react';
+import React, { FC, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 
-import { useStore } from '../../store';
 import StructuredOption, {
   StructuredOptionMode,
   StructuredOptionProps,
