@@ -59,6 +59,7 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
 
   const handleChange: StructuredOptionProps['onChange'] = (mode, value, oldValue) => {
     setOpen(false);
+    selectRef.current?.blur();
     if (mode === StructuredOptionMode.modify) {
       setFilterData((state) => {
         const index = state.findIndex((item) => isEqual(item, oldValue));
