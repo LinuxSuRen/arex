@@ -21,6 +21,7 @@ import { useStore } from '../../../store';
 import { StructuredFilter, TooltipButton } from '../../index';
 import { PagesType } from '../../panes';
 import { LabelKey, SearchDataType } from '../../StructuredFilter';
+import { StructuredValue } from '../../StructuredFilter/StructuredOption';
 import { EmptyWrapper } from '../../styledComponents';
 import { MenusType } from '../index';
 import CollectionTitle from './CollectionTitle';
@@ -78,12 +79,12 @@ const CollectionMenuWrapper = styled.div`
   }
 `;
 
-const dataList: { key: React.Key; title: string }[] = [];
+const dataList: { key: React.Key; title: string; labelIds: string[] }[] = [];
 const generateList = (data: DataNode[]) => {
   for (let i = 0; i < data.length; i++) {
     const node = data[i];
-    const { key, title }: any = node;
-    dataList.push({ key, title });
+    const { key, title, labelIds }: any = node;
+    dataList.push({ key, title, labelIds: labelIds || [] });
     if (node.children) {
       generateList(node.children);
     }
@@ -198,17 +199,45 @@ const CollectionMenu = () => {
     setAutoExpandParent(false);
   };
 
+  function labelFilter(structuredValue: StructuredValue[], labels: string[]) {
+    // 这里逻辑是且，如果过滤出来长度一样，说明符合全部条件
+    return (
+      structuredValue.filter((structuredValueItem) => {
+        if (
+          structuredValueItem.category === 'label' &&
+          structuredValueItem.operator === '==' &&
+          labels.includes(String(structuredValueItem.value))
+        ) {
+          return true;
+        }
+        if (
+          structuredValueItem.category === 'label' &&
+          structuredValueItem.operator === '!=' &&
+          !labels.includes(String(structuredValueItem.value))
+        ) {
+          return true;
+        }
+
+        return false;
+      }).length === structuredValue.length
+    );
+  }
+
   const handleSearch = (data: SearchDataType) => {
     console.log(data);
     const { keyword, structuredValue } = data;
     const regExp = new RegExp(keyword || '', 'i');
-    let newExpandedKeys;
-    if (keyword == '') {
+    let newExpandedKeys; //TODO newExpandedKeys只负责展开，过滤逻辑需要再实现
+    if ((keyword === '' || keyword === undefined) && structuredValue.length === 0) {
       newExpandedKeys = dataList.map((item) => item.title);
     } else {
       newExpandedKeys = dataList
         .map((item) => {
-          if (item.title.match(regExp)) {
+          // @ts-ignore
+          if (
+            (keyword && item.title.match(regExp)) ||
+            labelFilter(structuredValue, item.labelIds)
+          ) {
             return getParentKey(item.key, treeData);
           }
           return null;
@@ -419,7 +448,6 @@ const CollectionMenu = () => {
         if (e.key == dragKey) toIndex = i;
       });
     }
-    // console.log({fromNodePath, id: params.workspaceId, toParentPath, toIndex});
     CollectionService.move({
       fromNodePath,
       id: params.workspaceId,
