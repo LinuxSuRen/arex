@@ -1,10 +1,11 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { css } from '@emotion/react';
+import styled from '@emotion/styled';
 import { useKeyPress } from 'ahooks';
-import { Button, Select } from 'antd';
+import { Button, Select, SelectProps } from 'antd';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { isEqual } from 'lodash';
 import { BaseSelectRef } from 'rc-select';
-import React, { FC, useRef, useState } from 'react';
+import React, { FC, ReactNode, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 
 import StructuredOption, {
@@ -19,11 +20,43 @@ import StructuredTag from './StructuredTag';
 export const LabelKey = 'label';
 export type SearchDataType = { keyword?: string; structuredValue: StructuredValue[] };
 export type StructuredFilterProps = {
+  size?: SizeType;
+  prefix?: ReactNode;
+  showSearchButton?: boolean;
   onSearch?: (value: SearchDataType) => void;
   options: StructuredOptionType[];
-};
+} & Omit<SelectProps, 'options' | 'onSearch'>;
+
+const StructuredFilterWrapper = styled.div<{ size: SizeType }>`
+  display: flex;
+  .prefix {
+  }
+  .search-wrapper {
+    flex-grow: 1;
+  }
+  .search-content {
+    display: flex;
+    ${(props) =>
+      props.size === 'small'
+        ? `width: 133.33%;
+    transform: scale(0.75);`
+        : ''}
+
+    transform-origin: top left;
+
+    .search-inner {
+      flex-grow: 1;
+      margin-right: 8px;
+      .ant-select-selector {
+        height: 36px;
+      }
+    }
+  }
+`;
 
 const StructuredFilter: FC<StructuredFilterProps> = (props) => {
+  const { showSearchButton = true, options, ...restProps } = props;
+
   const selectRef = useRef<BaseSelectRef>(null);
   const structuredOptionRef = useRef<StructuredOptionRef>(null);
 
@@ -57,6 +90,17 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
     setFilterData(data);
   };
 
+  const handleFocus = () => {
+    setFocus(true);
+    setOpen(true);
+  };
+
+  const handleBlur = () => {
+    setFocus(false);
+    setOpen(false);
+    structuredOptionRef.current?.reset();
+  };
+
   const handleChange: StructuredOptionProps['onChange'] = (mode, value, oldValue) => {
     setOpen(false);
     if (mode === StructuredOptionMode.modify) {
@@ -77,56 +121,57 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100%' }}>
-      <Select
-        allowClear
-        ref={selectRef}
-        mode='multiple'
-        open={open}
-        tagRender={(props) => (
-          <StructuredTag
-            {...props}
-            onOperatorClick={handleTagOperatorClick}
-            onValueClick={handleTagValueClick}
-            onDelete={handleDeleteTag}
-          />
-        )}
-        value={filterData.map((data) => JSON.stringify(data))}
-        searchValue={keyword}
-        autoClearSearchValue={false}
-        dropdownRender={() => (
-          <StructuredOption
-            ref={structuredOptionRef}
-            keyword={keyword}
-            options={props.options}
-            onChange={handleChange}
-            onSearch={handleSearch}
-          />
-        )}
-        onSearch={setKeyword}
-        onClear={() => setFilterData([])}
-        onFocus={() => {
-          setFocus(true);
-          setOpen(true);
-        }}
-        onBlur={() => {
-          setFocus(false);
-          setOpen(false);
-          structuredOptionRef.current?.reset();
-        }}
-        css={css`
-          flex-grow: 1;
-          margin-right: 8px;
-          .ant-select-selector {
-            height: 36px;
-          }
-        `}
-      />
+    <StructuredFilterWrapper size={props.size}>
+      <div className='prefix'>{props.prefix}</div>
 
-      <Button icon={<SearchOutlined />} onClick={handleSearch} style={{ height: '36px' }}>
-        Search
-      </Button>
-    </div>
+      <div className='search-wrapper'>
+        <div className='search-content'>
+          <Select
+            {...restProps}
+            showArrow
+            allowClear
+            ref={selectRef}
+            className='search-inner'
+            mode='multiple'
+            open={open}
+            size={props.size}
+            suffixIcon={<SearchOutlined />}
+            tagRender={(props) => (
+              <StructuredTag
+                {...props}
+                size={'small'}
+                onOperatorClick={handleTagOperatorClick}
+                onValueClick={handleTagValueClick}
+                onDelete={handleDeleteTag}
+              />
+            )}
+            value={filterData.map((data) => JSON.stringify(data))}
+            searchValue={keyword}
+            autoClearSearchValue={false}
+            dropdownRender={() => (
+              <StructuredOption
+                ref={structuredOptionRef}
+                size={props.size}
+                keyword={keyword}
+                options={options}
+                onChange={handleChange}
+                onSearch={handleSearch}
+              />
+            )}
+            onSearch={setKeyword}
+            onClear={() => setFilterData([])}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
+
+          {showSearchButton && (
+            <Button icon={<SearchOutlined />} onClick={handleSearch} style={{ height: '36px' }}>
+              Search
+            </Button>
+          )}
+        </div>
+      </div>
+    </StructuredFilterWrapper>
   );
 };
 

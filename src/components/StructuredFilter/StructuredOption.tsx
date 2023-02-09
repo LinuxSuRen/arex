@@ -1,5 +1,6 @@
 import { Carousel, Menu } from 'antd';
 import { CarouselRef } from 'antd/es/carousel';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
 import React, {
   forwardRef,
@@ -24,6 +25,7 @@ export type StructuredValue = {
 };
 
 export type StructuredOptionProps = {
+  size?: SizeType;
   keyword?: string;
   options: StructuredOptionType[];
   onChange?: (
@@ -35,7 +37,7 @@ export type StructuredOptionProps = {
 };
 
 export type StructuredOptionRef = {
-  set: (value: { data?: StructuredValue; type?: (typeof Step)[1] | (typeof Step)[2] }) => void;
+  set: (value: { data?: StructuredValue; type?: typeof Step[1] | typeof Step[2] }) => void;
   reset: () => void;
 };
 
@@ -107,7 +109,7 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
     },
   }));
 
-  const handleChange = (data: StructuredValue, step: (typeof Step)[number]) => {
+  const handleChange = (data: StructuredValue, step: typeof Step[number]) => {
     if (mode === StructuredOptionMode.modify) {
       props.onChange?.(mode, data, value);
       carouselRef.current?.goTo(0, false);
