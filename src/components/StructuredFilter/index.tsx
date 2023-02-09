@@ -35,18 +35,18 @@ const StructuredFilterWrapper = styled.div<{ size: SizeType }>`
     flex-grow: 1;
   }
   .search-content {
+    position: relative;
     display: flex;
     ${(props) =>
       props.size === 'small'
         ? `width: 133.33%;
     transform: scale(0.75);`
         : ''}
-
     transform-origin: top left;
-
     .search-inner {
       flex-grow: 1;
       margin-right: 8px;
+      position: relative;
       .ant-select-selector {
         height: 36px;
       }
@@ -55,7 +55,7 @@ const StructuredFilterWrapper = styled.div<{ size: SizeType }>`
 `;
 
 const StructuredFilter: FC<StructuredFilterProps> = (props) => {
-  const { showSearchButton = true, options, ...restProps } = props;
+  const { showSearchButton = true, size, options, ...restProps } = props;
 
   const selectRef = useRef<BaseSelectRef>(null);
   const structuredOptionRef = useRef<StructuredOptionRef>(null);
@@ -121,7 +121,7 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
   };
 
   return (
-    <StructuredFilterWrapper size={props.size}>
+    <StructuredFilterWrapper size={size}>
       <div className='prefix'>{props.prefix}</div>
 
       <div className='search-wrapper'>
@@ -133,13 +133,13 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
             ref={selectRef}
             className='search-inner'
             mode='multiple'
+            size={size}
             open={open}
-            size={props.size}
             suffixIcon={<SearchOutlined />}
             tagRender={(props) => (
               <StructuredTag
                 {...props}
-                size={'small'}
+                size={size}
                 onOperatorClick={handleTagOperatorClick}
                 onValueClick={handleTagValueClick}
                 onDelete={handleDeleteTag}
@@ -151,7 +151,7 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
             dropdownRender={() => (
               <StructuredOption
                 ref={structuredOptionRef}
-                size={props.size}
+                size={size}
                 keyword={keyword}
                 options={options}
                 onChange={handleChange}

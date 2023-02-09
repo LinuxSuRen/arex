@@ -67,7 +67,7 @@ const StructuredTag = (props: StructuredTagProps) => {
 
   return (
     <StructuredTagWrapper>
-      <Space.Compact block size='small' style={{ margin: '4px' }}>
+      <Space.Compact block size={props.size} style={{ margin: '4px' }}>
         {React.createElement(
           data?.category === LabelKey ? Tag : Button,
           {
