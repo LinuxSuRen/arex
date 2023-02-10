@@ -1,30 +1,40 @@
-import { message } from 'antd';
-
+import { MethodEnum, NodeType } from '../constant';
 import request from '../helpers/api/axios';
 import { collectionOriginalTreeToAntdTreeData } from '../helpers/collection/util';
 import { QueryLabelsReq, QueryLabelsRes, RemoveLabelsReq, SaveLabelsReq } from './Collection.type';
-import { SaveCaseReq } from './FileSystem.type';
 
 export interface NodeObject {
   id: string;
   children: NodeObject[];
+  labelIds: string[];
   title: string;
   key: string;
   nodeType: number;
   method: string;
 }
 
+export type CollectionItem = {
+  infoId: string;
+  labelIds: string[];
+  method: MethodEnum | null;
+  nodeName: string;
+  nodeType: NodeType;
+  children: CollectionItem[] | null;
+};
+
+export type ListCollectionRes = {
+  fsTree: {
+    id: string;
+    roots: CollectionItem[];
+    userName: string;
+    workspaceName: string;
+  };
+};
+
 export class CollectionService {
   static listCollection(params: { id: string }) {
     return request
-      .post<{
-        fsTree: {
-          id: string;
-          roots: any[];
-          userName: string;
-          workspaceName: string;
-        };
-      }>(`/report/filesystem/queryWorkspaceById`, params)
+      .post<ListCollectionRes>(`/report/filesystem/queryWorkspaceById`, params)
       .then((res) => Promise.resolve(collectionOriginalTreeToAntdTreeData(res.body.fsTree.roots)));
   }
   static async addItem(params: any): Promise<any> {

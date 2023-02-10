@@ -1,5 +1,7 @@
+import styled from '@emotion/styled';
 import { Carousel, Menu } from 'antd';
 import { CarouselRef } from 'antd/es/carousel';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
 import React, {
   forwardRef,
@@ -24,6 +26,7 @@ export type StructuredValue = {
 };
 
 export type StructuredOptionProps = {
+  size?: SizeType;
   keyword?: string;
   options: StructuredOptionType[];
   onChange?: (
@@ -51,6 +54,13 @@ const InitialValue = {
   operator: undefined,
   value: undefined,
 };
+
+const MenuList = styled(Menu)<{ size?: SizeType }>`
+  .ant-menu-item {
+    height: ${(props) => (props.size === 'small' ? '24px' : '28px')};
+    line-height: ${(props) => (props.size === 'small' ? '24px' : '28px')};
+  }
+`;
 
 const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, StructuredOptionProps> = (
   props,
@@ -132,7 +142,8 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
       }}
     >
       <Carousel fade ref={carouselRef} dots={false}>
-        <Menu
+        <MenuList
+          size={props.size}
           selectedKeys={[]}
           items={categoryOptions}
           onClick={({ key: category }) => {
@@ -140,14 +151,16 @@ const StructuredOption: ForwardRefRenderFunction<StructuredOptionRef, Structured
             handleChange({ ...value, category }, Step[0]);
           }}
         />
-        <Menu
+        <MenuList
+          size={props.size}
           selectedKeys={[]}
           items={operatorOptions}
           onClick={({ key: operator }) => {
             handleChange({ ...value, operator }, Step[1]);
           }}
         />
-        <Menu
+        <MenuList
+          size={props.size}
           selectedKeys={[]}
           items={valueOptions}
           onClick={({ key }) => {

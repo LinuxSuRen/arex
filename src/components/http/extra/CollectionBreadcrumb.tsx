@@ -134,7 +134,9 @@ const CollectionBreadcrumb: FC<HttpBreadcrumbProps> = ({ nodePath, id, defaultTa
                   {label}
                 </Tag>
               )}
-              onBlur={() => saveLabel({ id, labelIds: labelValue })}
+              onBlur={() =>
+                saveLabel({ id, labelIds: labelValue, workspaceId: params.workspaceId })
+              }
               onChange={setLabelValue}
             />
           ))}

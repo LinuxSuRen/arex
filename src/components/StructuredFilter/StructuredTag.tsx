@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 import { useHover } from 'ahooks';
 import { Button, Space, Tag, Typography } from 'antd';
 import { DefaultOptionType } from 'rc-select/lib/Select';
-import React, { useMemo, useRef } from 'react';
+import React, { ReactNode, useMemo, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
 
 import { tryParseJsonString } from '../../helpers/utils';
@@ -67,7 +67,7 @@ const StructuredTag = (props: StructuredTagProps) => {
 
   return (
     <StructuredTagWrapper>
-      <Space.Compact block size='small' style={{ margin: '4px' }}>
+      <Space.Compact block size={props.size} style={{ margin: '4px' }}>
         {React.createElement(
           data?.category === LabelKey ? Tag : Button,
           {
@@ -104,8 +104,10 @@ const StructuredTag = (props: StructuredTagProps) => {
           </>,
         )}
 
-        <Button onClick={() => props.onOperatorClick?.(data)}>{data?.operator}</Button>
-        <Button onClick={() => props.onValueClick?.(data)}>
+        <Button size='small' onClick={() => props.onOperatorClick?.(data)}>
+          {data?.operator}
+        </Button>
+        <Button size='small' onClick={() => props.onValueClick?.(data)}>
           {label?.labelName || data?.value}
         </Button>
       </Space.Compact>
