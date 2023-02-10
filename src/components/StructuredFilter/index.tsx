@@ -140,7 +140,6 @@ const StructuredFilter: FC<StructuredFilterProps> = (props) => {
             tagRender={(props) => (
               <StructuredTag
                 {...props}
-                size={size}
                 onOperatorClick={handleTagOperatorClick}
                 onValueClick={handleTagValueClick}
                 onDelete={handleDeleteTag}
