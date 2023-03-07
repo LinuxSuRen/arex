@@ -7,8 +7,9 @@ export type DarkMode = boolean;
 export type CompactMode = boolean;
 
 export enum Theme {
-  dark = 'dark',
   light = 'light',
+  dark = 'dark',
+  black = 'black',
 }
 
 export enum ColorPrimary {
@@ -30,7 +31,7 @@ export const lightToken: Partial<AliasToken> = {
   colorInfo: '#29b6f6',
   colorWarning: '#ffa726',
   colorError: '#f44336',
-  colorBgLayout: '#fff',
+  // colorBgLayout: '#fff',
   colorTextBase: '#000000d9',
 };
 
@@ -40,13 +41,23 @@ export const darkToken: Partial<AliasToken> = {
   colorInfo: '#29b6f6',
   colorWarning: '#ffa726',
   colorError: '#f44336',
-  // colorBgLayout: '#202020',
-  colorTextBase: '#ffffffd9',
+  colorBgLayout: '#202020',
+  colorTextBase: '#fafafa',
+};
+
+export const blackToken: Partial<AliasToken> = {
+  colorPrimary: '#955cf4',
+  colorSuccess: '#66bb6a',
+  colorInfo: '#29b6f6',
+  colorWarning: '#ffa726',
+  colorError: '#f44336',
+  colorTextBase: '#f5f5f5',
 };
 
 export const tokenMap = {
   [Theme.light]: lightToken,
   [Theme.dark]: darkToken,
+  [Theme.black]: blackToken,
 };
 
 export const generateToken = (theme: Theme, colorPrimary?: ColorPrimary) => {

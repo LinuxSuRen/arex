@@ -1,5 +1,5 @@
 import { useRequest } from 'ahooks';
-import { App, Form, Select, Switch } from 'antd';
+import { App, Form, Segmented, Select, Switch, Tooltip } from 'antd';
 import { changeLanguage } from 'i18next';
 import React, { FC, useEffect } from 'react';
 
@@ -10,6 +10,7 @@ import { local } from '../../i18n';
 import { UserService } from '../../services/User.service';
 import useUserProfile, { UserProfile } from '../../store/useUserProfile';
 import { ColorPrimaryPalette } from '../../theme';
+import { CloudOutlined, MoonOutlined, SunOutlined } from '../Icons';
 import { AvatarUpload, ColorPicker } from '../setting';
 import { PanesTitle } from '../styledComponents';
 
@@ -48,8 +49,10 @@ const SettingPage: FC = () => {
     form
       .validateFields()
       .then((values) => {
+        console.log(values);
         const profile: UserProfile = {
           colorPrimary: values.colorPrimary.name,
+          theme: values.theme,
           darkMode: values.darkMode,
           compactMode: values.compactMode,
           language: values.language,
@@ -92,8 +95,39 @@ const SettingPage: FC = () => {
         <Switch />
       </Form.Item>
 
-      <Form.Item label='Dark Mode' name='darkMode' valuePropName='checked'>
-        <Switch />
+      {/*<Form.Item label='Dark Mode' name='darkMode'>*/}
+      {/*  <Switch />*/}
+      {/*</Form.Item>*/}
+
+      <Form.Item label='Theme' name='theme'>
+        <Segmented
+          options={[
+            {
+              icon: (
+                <Tooltip title='Light'>
+                  <SunOutlined />
+                </Tooltip>
+              ),
+              value: 'light',
+            },
+            {
+              icon: (
+                <Tooltip title='Dark'>
+                  <CloudOutlined />
+                </Tooltip>
+              ),
+              value: 'dark',
+            },
+            {
+              icon: (
+                <Tooltip title='Black'>
+                  <MoonOutlined />
+                </Tooltip>
+              ),
+              value: 'black',
+            },
+          ]}
+        />
       </Form.Item>
 
       <Form.Item label='Primary Color' name='colorPrimary'>
