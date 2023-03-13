@@ -70,11 +70,11 @@ const CollectionBreadcrumb: FC<HttpBreadcrumbProps> = ({ nodePath, id, defaultTa
   return (
     <SpaceBetweenWrapper>
       <Space>
-        <Breadcrumb>
-          {nodePath.map((title, index) => (
-            <Breadcrumb.Item key={index}>{title}</Breadcrumb.Item>
-          ))}
-        </Breadcrumb>
+        <Breadcrumb
+          items={nodePath.map((title) => ({
+            title: title,
+          }))}
+        />
 
         {nodeType === 2 &&
           (!editEditAble ? (

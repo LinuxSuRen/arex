@@ -5,6 +5,7 @@
   "scripts": {
     "prepare": "husky install",
     "dev": "vite",
+    "checkts": "tsc",
     "build": "tsc && vite build",
     "lint-staged": "lint-staged",
     "format": "prettier --write src/**/*.ts{,x}",
@@ -120,6 +121,7 @@
     "lodash-es": "^4.17.21",
     "prettier": "^2.8.0",
     "typescript": "^4.9.3",
-    "vite": "^4.1.4"
+    "vite": "^4.1.4",
+    "vite-plugin-monaco-editor": "^1.1.0"
   }
 }

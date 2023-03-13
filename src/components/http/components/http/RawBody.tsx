@@ -4,6 +4,7 @@ import { App } from 'antd';
 import React, { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useMonaco } from '../../../../composables/monaco';
 import { useCodeMirror } from '../../helpers/editor/codemirror';
 import { HttpContext } from '../../index';
 
@@ -15,23 +16,37 @@ const HttpRawBody = forwardRef<HttpRawBodyRef>((props, ref) => {
   const { message } = App.useApp();
 
   const rawBodyParameters = useRef<HTMLDivElement>(null);
+
   const { store, dispatch } = useContext(HttpContext);
   const { t } = useTranslation();
 
   useImperativeHandle(ref, () => ({ prettifyRequestBody }));
-
-  useCodeMirror({
-    container: rawBodyParameters.current,
-    value: store.request.body?.body,
-    height: '100%',
-    extensions: [json()],
-    theme: store.theme,
+  useMonaco(rawBodyParameters, store.request.body?.body, {
+    extendedEditorConfig: {
+      lineWrapping: true,
+      mode: 'json',
+      placeholder: t('request.raw_body').toString(),
+      theme: store.theme,
+    },
+    environmentHighlights: true,
     onChange: (value: string) => {
       dispatch((state) => {
         state.request.body.body = value;
       });
     },
   });
+  // useCodeMirror({
+  //   container: rawBodyParameters.current,
+  //   value: store.request.body?.body,
+  //   height: '100%',
+  //   extensions: [json()],
+  //   theme: store.theme,
+  //   onChange: (value: string) => {
+  //     dispatch((state) => {
+  //       state.request.body.body = value;
+  //     });
+  //   },
+  // });
 
   const prettifyRequestBody = () => {
     try {
@@ -51,7 +66,12 @@ const HttpRawBody = forwardRef<HttpRawBodyRef>((props, ref) => {
         overflow-y: auto;
       `}
     >
-      <div ref={rawBodyParameters}></div>
+      <div
+        css={css`
+          height: 100%;
+        `}
+        ref={rawBodyParameters}
+      ></div>
     </div>
   );
 });

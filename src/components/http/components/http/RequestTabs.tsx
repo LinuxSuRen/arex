@@ -104,6 +104,7 @@ const RequestTabs: FC<{ config?: TabConfig }> = ({ config }) => {
       <Tabs
         className={'http-request-options-tab'}
         css={css`
+          height: 100%;
           .ant-tabs-nav {
             margin-bottom: 0;
           }

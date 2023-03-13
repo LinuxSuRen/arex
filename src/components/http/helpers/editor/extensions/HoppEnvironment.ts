@@ -20,7 +20,6 @@ export const getMarkFromToArr = (
     value: string;
   };
 }[] => {
-  // ssss
   const editorValueMatch = text.match(reg) || [];
   const arr = [];
   for (let i = 0; i < editorValueMatch.length; i++) {

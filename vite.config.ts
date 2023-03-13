@@ -1,11 +1,15 @@
-// import react from '@vitejs/plugin-react';
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
-
+import monacoEditorPlugin from 'vite-plugin-monaco-editor';
+console.log(monacoEditorPlugin, 'monacoEditorPlugin');
 export default defineConfig({
   plugins: [
     react({
       jsxImportSource: '@emotion/react',
+    }),
+    monacoEditorPlugin({
+      // publicPath: 'https://unpkg.com/vite-plugin-monaco-editor@1.1.0/cdn',
+      // languageWorkers: ['json', 'javascript', 'editorWorkerService'],
     }),
   ],
   server: {
