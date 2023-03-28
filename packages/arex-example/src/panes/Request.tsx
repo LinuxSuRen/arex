@@ -1,7 +1,10 @@
 import { css } from '@emotion/react';
 import { Breadcrumb } from 'antd';
 import { Http } from 'arex-common';
+import axios from 'axios';
 import { FC } from 'react';
+
+// import { runCollectionItem } from '../helpers/postman/runCollectionItem';
 const HttpBreadcrumb: FC<{ nodePaths: { title: string }[] }> = ({ nodePaths }) => {
   return (
     <div>
@@ -16,7 +19,7 @@ const HttpBreadcrumb: FC<{ nodePaths: { title: string }[] }> = ({ nodePaths }) =
 const RequestPane = () => {
   const data = {
     _id: '63f45036ad9f1dd47f7cbe62',
-    endpoint: '{{url}}/api/listworkspace',
+    endpoint: 'http://127.0.0.1:16888/test123',
     method: 'POST',
     testScript:
       '\npm.test("Status code is 200", function () {\n    pm.response.to.have.status(200);\n});\n\npm.sendRequest("https://postman-echo.com/get", function (err, response) {\n    console.log(response.json());\n});\n',
@@ -60,6 +63,13 @@ const RequestPane = () => {
           return new Promise((resolve) => resolve(0));
         }}
         onSend={(req) => {
+          return axios.post('http://localhost:16888/proxy',req).then((r) => {
+            console.log(r);
+            return {
+              response: r.data.response,
+              testResult: r.data.assertionsBox,
+            };
+          });
           // @ts-ignore
           return new Promise((resolve) => resolve(0));
         }}

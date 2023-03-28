@@ -2,12 +2,10 @@ import { CheckCircleOutlined, DeleteOutlined, StopOutlined } from '@ant-design/i
 import styled from '@emotion/styled';
 import { Button, Input, Space, Table, TableProps, Tooltip } from 'antd';
 import { ColumnsType } from 'antd/es/table';
-import { useContext } from 'react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Updater } from 'use-immer';
 
-import SmartEnvInput from '../smart/EnvInput';
 export type KeyValueType = {
   key: string;
   value: string;
@@ -50,12 +48,12 @@ export const useColumns = (
       width: '50%',
       render: editable
         ? (text, record, i) => (
-            <SmartEnvInput
+            <Input
               value={text}
-              // bordered={false}
-              // placeholder={t('count.key') || ''}
-              // disabled={!record.active}
-              onChange={(e) => handleChange(i, 'key', e)}
+              bordered={false}
+              placeholder={t('count.key') || ''}
+              disabled={!record.active}
+              onChange={(e) => handleChange(i, 'key', e.target.value)}
             />
           )
         : undefined,
@@ -67,12 +65,12 @@ export const useColumns = (
       width: '50%',
       render: editable
         ? (text, record, i) => (
-            <SmartEnvInput
+            <Input
               value={text}
-              // bordered={false}
-              // placeholder={t('count.key') || ''}
-              // disabled={!record.active}
-              onChange={(e) => handleChange(i, 'value', e)}
+              bordered={false}
+              placeholder={t('count.value') || ''}
+              disabled={!record.active}
+              onChange={(e) => handleChange(i, 'value', e.target.value)}
             />
           )
         : undefined,
