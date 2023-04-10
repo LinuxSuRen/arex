@@ -10,7 +10,7 @@ import ThemeMiddlewareProvider from './theme/ThemeMiddlewareProvider';
 
 const App = () => {
   // TODO 暂时any
-  const routesContent:any = useRoutes(routerConfig);
+  const routesContent: any = useRoutes(routerConfig);
 
   return (
     <MainProvider>
