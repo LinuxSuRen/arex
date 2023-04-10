@@ -1,3 +1,2 @@
 import Environment from './Environment';
-
-cons;
+export default Environment;

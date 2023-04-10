@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 
 import { MenusType, PanesType } from '../constant';
-import Environment, { EnvironmentPanesData } from './Environment';
+import Environment from './Environment';
+import { EnvironmentPanesData } from './Environment/Environment';
 import Request from './Request';
 
 export type PanesProps<D extends PanesData = undefined, P = unknown> = P & {

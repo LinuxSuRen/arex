@@ -51,7 +51,7 @@ const RequestPane = () => {
         height: calc(100vh - 140px);
       `}
     >
-      <ArexPanes.Http
+      <ArexPanes.Request
         breadcrumb={<HttpBreadcrumb nodePaths={[]} />}
         // @ts-ignore
         value={data}

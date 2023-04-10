@@ -1,6 +1,6 @@
 {
   "name": "arex-core",
-  "version": "0.0.3-beta.1",
+  "version": "0.0.1-beta.1",
   "main": "dist/arex-core.umd.cjs",
   "module": "dist/arex-core.js",
   "type": "module",

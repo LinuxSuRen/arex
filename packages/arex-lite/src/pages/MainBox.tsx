@@ -120,7 +120,6 @@ const MainBox = () => {
                   })
                   ?.element(),
               };
-              console.log(s);
               return s;
             })}
           />
