@@ -1,6 +1,10 @@
+import 'allotment/dist/style.css';
+
+import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useRequest } from 'ahooks';
 import { App } from 'antd';
+import { ConfigProvider as RequestConfigProvider, Http } from 'arex-request-core';
 import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -8,16 +12,17 @@ import { useParams } from 'react-router-dom';
 import { treeFind, treeFindPath } from '../../helpers/collection/util';
 import { parsePaneId } from '../../helpers/functional/url';
 import { runRESTPreRequest, runRESTRequest } from '../../helpers/http/RequestRunner';
-import { convertSaveRequestData } from '../../helpers/http/util';
+import { convertSaveRequestData, convertShowRequestData } from '../../helpers/http/util';
+import { sendRequest } from '../../helpers/postman';
 import { useCustomNavigate } from '../../router/useCustomNavigate';
 import { FileSystemService } from '../../services/FileSystem.service';
 import { useStore } from '../../store';
 import useUserProfile from '../../store/useUserProfile';
-import Http, { HttpRef } from '../http';
-import { Environment } from '../http/data/environment';
-import { HoppRESTRequest } from '../http/data/rest';
-import { ExtraTabs } from '../http/extra';
-import { HoppRESTResponse } from '../http/helpers/types/HoppRESTResponse';
+// import Http, { HttpRef } from '../http';
+// import { Environment } from '../http/data/environment';
+// import { HoppRESTRequest } from '../http/data/rest';
+// import { ExtraTabs } from '../http/extra';
+// import { HoppRESTResponse } from '../http/helpers/types/HoppRESTResponse';
 import { nodeType } from '../menus/CollectionMenu';
 import SaveRequestButton from '../menus/CollectionMenu/SaveRequestButton';
 import { sendQuickCompare } from './BatchComparePage/util';
@@ -29,13 +34,30 @@ const HttpRequestPageWrapper = styled.div`
   min-height: 650px;
   overflow-y: auto;
   border: 0 solid salmon;
+
   .ant-tabs-content {
     .ant-tabs-tabpane {
       padding: 0;
     }
   }
+  .allotment-module_splitView__L-yRc
+    > .allotment-module_splitViewContainer__rQnVa
+    > .allotment-module_splitViewView__MGZ6O:not(.allotment-module_visible__AHq-h) {
+    display: block !important;
+  }
 `;
-
+const defaultReq = {
+  preRequestScript: '',
+  v: '',
+  headers: [],
+  name: '',
+  body: { contentType: 'application/json', body: '' },
+  auth: { authActive: false, authType: 'none' },
+  testScript: '',
+  endpoint: '',
+  method: 'GET',
+  params: [],
+};
 const HttpRequestPage: PageFC<nodeType> = (props) => {
   const { t } = useTranslation(['components']);
   const { message } = App.useApp();
@@ -45,10 +67,10 @@ const HttpRequestPage: PageFC<nodeType> = (props) => {
   const { collectionTreeData, setPages, pages, activeEnvironment } = useStore();
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [reqParams, setReqParams] = useState<HoppRESTRequest>();
+  const [reqParams, setReqParams] = useState<any>();
   const params = useParams();
   const customNavigate = useCustomNavigate();
-  const environment = useMemo<Environment>(
+  const environment = useMemo<any>(
     () =>
       activeEnvironment
         ? {
@@ -110,37 +132,21 @@ const HttpRequestPage: PageFC<nodeType> = (props) => {
     },
   );
 
-  const httpConfig = useMemo(
-    () => ({
-      requestTabs: {
-        extra: [
-          {
-            label: 'Mock',
-            key: 'mock',
-            hidden: !data?.recordId,
-            children: <ExtraTabs.RequestTabs.Mock recordId={data?.recordId as string} />,
-          },
-          {
-            label: t('http.compare_config'),
-            key: 'compareConfig',
-            hidden: nodeType === 2,
-            children: (
-              <ExtraTabs.RequestTabs.CompareConfig
-                interfaceId={id}
-                operationId={data?.operationId}
-              />
-            ),
-          },
-        ],
-      },
-      responseTabs: {
-        extra: [],
-      },
-    }),
-    [data],
-  );
+  const handleSaveAs = (node: nodeType) => {
+    const filteredPanes = pages.filter((i) => i.paneId !== props.page.paneId);
+    setPages(filteredPanes);
 
-  const handleSave = (request: HoppRESTRequest, response?: HoppRESTResponse) => {
+    const nodeType = node.nodeType === 3 ? PagesType.Folder : PagesType.Request;
+    customNavigate(
+      `/${params.workspaceId}/${nodeType}/${node.key}?data=${encodeURIComponent(
+        JSON.stringify(node),
+      )}`,
+    );
+    window.globalFetchTreeData();
+  };
+  const httpRef = useRef<any>(null);
+
+  const handleSave = (request: any, response?: any) => {
     if (
       !request.headers.find((i) => i.key === 'arex-record-id') &&
       (response?.type === 'success' ? response.headers : []).find(
@@ -166,48 +172,38 @@ const HttpRequestPage: PageFC<nodeType> = (props) => {
       );
     }
   };
-
-  const handleSaveAs = (node: nodeType) => {
-    const filteredPanes = pages.filter((i) => i.paneId !== props.page.paneId);
-    setPages(filteredPanes);
-
-    const nodeType = node.nodeType === 3 ? PagesType.Folder : PagesType.Request;
-    customNavigate(
-      `/${params.workspaceId}/${nodeType}/${node.key}?data=${encodeURIComponent(
-        JSON.stringify(node),
-      )}`,
-    );
-    window.globalFetchTreeData();
-  };
-  const httpRef = useRef<HttpRef>(null);
+  function onSend(request: any, environment: any) {
+    return sendRequest(request, environment).then((res: any) => {
+      return {
+        response: res.response,
+        testResult: res.testResult,
+      };
+    });
+  }
   return (
     <HttpRequestPageWrapper>
-      <Http
-        ref={httpRef}
-        renderResponse
-        id={id}
-        // TODO 这里较复杂，待完善类型
-        // @ts-ignore
-        value={data}
-        theme={theme}
-        config={httpConfig}
-        nodeType={nodeType}
-        nodePath={nodePath.map((item) => item.title)}
-        environment={environment}
-        onPreSend={runRESTPreRequest}
-        onSend={runRESTRequest}
-        onSendCompare={(request) => {
-          const nodeInfo = treeFindPath(collectionTreeData, (node) => node.key === id);
-          return sendQuickCompare({
-            caseId: id,
-            nodeInfo,
-            envs: environment.variables,
-            request,
-          });
-        }}
-        onSave={handleSave}
-        onPin={runPinMock}
-      />
+      <RequestConfigProvider locale={'zh'} theme={'light'}>
+        {data ? (
+          <Http
+            onSend={(request) => {
+              return onSend(request, {
+                name: 'dev',
+                variables: [{ key: 'url', value: 'https://m.weibo.cn' }],
+              });
+            }}
+            onSave={(req) => {
+              handleSave(req, { headers: [], type: 'success' });
+            }}
+            value={convertShowRequestData(data)}
+            breadcrumb={<div></div>}
+            environment={{
+              name: 'dev',
+              variables: [{ key: 'url', value: 'https://m.weibo.cn' }],
+            }}
+            config={{}}
+          />
+        ) : null}
+      </RequestConfigProvider>
 
       <SaveRequestButton
         open={saveModalOpen}

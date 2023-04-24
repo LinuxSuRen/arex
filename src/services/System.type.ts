@@ -2,7 +2,7 @@ import { LogLevel } from '../pages/Logs';
 
 export interface QueryLogsReq {
   pageSize?: number;
-  level?: (typeof LogLevel)[number];
+  level?: typeof LogLevel[number];
   previousId?: string;
   tags?: Record<string, string>;
 }
@@ -16,7 +16,7 @@ export type StackTrace = {
 
 export type Log = {
   id: string;
-  level: (typeof LogLevel)[number];
+  level: typeof LogLevel[number];
   loggerName: string;
   message: string;
   threadId: number;

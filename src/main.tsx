@@ -1,9 +1,11 @@
 import './i18n';
+import './helpers/adapter';
 import './assets/css/index.css';
 import './theme/style.css';
 import 'allotment/dist/style.css';
 import 'antd/dist/reset.css';
 import 'vanilla-jsoneditor/themes/jse-theme-dark.css';
+import './userWorker';
 
 import * as Sentry from '@sentry/react';
 import { ClickToComponent } from 'click-to-react-component';

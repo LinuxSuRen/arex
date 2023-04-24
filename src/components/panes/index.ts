@@ -2,8 +2,6 @@ import { FC } from 'react';
 
 import { Page, PageData } from '../../store';
 import AppSettingPage from './AppSettingPage';
-import BatchComparePage from './BatchComparePage';
-import BatchRunPage from './BatchRunPage';
 import EnvironmentPage from './EnvironmentPage';
 import FolderPage from './FolderPage';
 import HttpRequestPage from './HttpRequestPage';
@@ -12,7 +10,6 @@ import ReplayCaseDetailPage from './ReplayCaseDetailPage';
 import ReplayCasePage from './ReplayCasePage';
 import ReplayDiffScenesPage from './ReplayDiffScenesPage';
 import ReplayPage from './ReplayPage';
-import RunPage from './RunPage';
 import SettingPage from './SettingPage';
 import WorkspaceOverviewPage from './WorkspacePage';
 
@@ -48,9 +45,6 @@ const CommonPageType: PagesTypeType = {
   AppSetting: 'AppSettingPage',
   Setting: 'SettingPage',
   WorkspaceOverview: 'WorkspaceOverviewPage',
-  BatchRun: 'BatchRunPage',
-  BatchCompare: 'BatchComparePage',
-  Run: 'RunPage',
 };
 
 export const PagesType = Object.assign(CommonPageType, ExtraPagesType);
@@ -76,9 +70,6 @@ const CommonPages: PageComponents = {
   AppSettingPage,
   SettingPage,
   WorkspaceOverviewPage,
-  BatchRunPage,
-  BatchComparePage,
-  RunPage,
 };
 
 export default Object.assign(CommonPages, ExtraPages);
