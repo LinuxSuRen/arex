@@ -1,10 +1,8 @@
 import { Empty } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
 
 import { uuid } from '../../helpers/utils';
-import { useCustomSearchParams } from '../../router/useCustomSearchParams';
 import { ApplicationDataType, PlanStatistics } from '../../services/Replay.type';
 import { AppTitle, ReplayReport, ReplayTable } from '../replay';
 import { FlexCenterWrapper } from '../styledComponents';
@@ -13,10 +11,7 @@ import { PageFC } from './index';
 
 const ReplayPage: PageFC<ApplicationDataType> = (props) => {
   const { t } = useTranslation(['components']);
-  const nav = useNavigate();
-  const location = useLocation();
   const [selectedPlan, setSelectedPlan] = useState<PlanStatistics>();
-  const customSearchParams = useCustomSearchParams();
 
   const handleSelectPlan = (plan: PlanStatistics) => {
     plan.planId === selectedPlan?.planId ? setSelectedPlan(undefined) : setSelectedPlan(plan);
@@ -26,14 +21,6 @@ const ReplayPage: PageFC<ApplicationDataType> = (props) => {
   const handleRefreshDep = () => {
     setRefreshDep(uuid()); // 触发 ReplayTable 组件请求更新
   };
-
-  useEffect(() => {
-    if (selectedPlan?.planId) {
-      nav(
-        `${location.pathname}?data=${customSearchParams.query.data}&planId=${selectedPlan?.planId}`,
-      );
-    }
-  }, [selectedPlan]);
 
   return props.page.data ? (
     <>

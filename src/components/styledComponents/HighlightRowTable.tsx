@@ -22,7 +22,7 @@ export type HighlightRowTableProps<T> = {
   defaultCurrent?: number; // should be defined at the same time as defaultRow
   defaultRow?: number; // should be defined at the same time as defaultCurrent
   defaultSelectFirst?: boolean;
-  onRowClick?: (record: T) => void;
+  onRowClick?: (record: T, index: number) => void;
 } & TableProps<T>;
 
 function HighlightRowTable<T extends object>(props: HighlightRowTableProps<T>) {
@@ -58,18 +58,20 @@ function HighlightRowTable<T extends object>(props: HighlightRowTableProps<T>) {
             onClick: () => {
               if (typeof index === 'number') {
                 setSelectRow(
-                  page === selectRow.page && index === selectRow.row
+                  (props.pagination?.current || page) === selectRow.page && index === selectRow.row
                     ? invalidSelectRow
-                    : { row: index, page },
+                    : { row: index, page: props.pagination?.current || page },
                 );
-                onRowClick?.(record);
+                onRowClick?.(record, index);
               }
             },
           };
         }}
         onChange={handleChange}
         rowClassName={(record, index) =>
-          page === selectRow.page && index === selectRow.row ? 'clickRowStyle' : ''
+          (props.pagination?.current || page) === selectRow.page && index === selectRow.row
+            ? 'clickRowStyle'
+            : ''
         }
         {...restProps}
       />

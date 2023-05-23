@@ -6,6 +6,7 @@ import { tryPrettierJsonString } from '../helpers/utils';
 import {
   CreatePlanReq,
   CreatePlanRes,
+  PlanStatistics,
   QueryAllDiffMsgReq,
   QueryAllDiffMsgRes,
   QueryDifferencesReq,
@@ -45,13 +46,23 @@ export default class ReplayService {
       .then((res) => Promise.resolve(res.body.map((item) => item.application)));
   }
 
-  static async queryPlanStatistics(params: QueryPlanStatisticsReq) {
+  static async queryPlanStatistics(
+    params: { current?: number; pageSize?: number } & Pick<QueryPlanStatisticsReq, 'appId'>,
+  ) {
+    const { current, pageSize, appId } = params; // current, pageSize is used for usePagination hook
+    const requestParams = {
+      appId,
+      needTotal: true,
+      pageIndex: current,
+      pageSize,
+    };
     return request
-      .post<QueryPlanStatisticsRes>('/report/report/queryPlanStatistics', params)
+      .post<QueryPlanStatisticsRes>('/report/report/queryPlanStatistics', requestParams)
       .then((res) =>
-        Promise.resolve(
-          res.body.planStatisticList.sort((a, b) => b.replayStartTime - a.replayStartTime),
-        ),
+        Promise.resolve({
+          total: res.body.totalCount,
+          list: res.body.planStatisticList.sort((a, b) => b.replayStartTime - a.replayStartTime),
+        }),
       );
   }
 

@@ -16,6 +16,7 @@ const ReplayMenu: FC = () => {
       path: `/${params.workspaceId}/${PagesType.Replay}/${app.id}`,
       query: {
         data: encodeURIComponent(JSON.stringify(app)),
+        ...customSearchParams.query,
         planId: customSearchParams.query.planId,
       },
     });
